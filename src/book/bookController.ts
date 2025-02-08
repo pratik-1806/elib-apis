@@ -186,5 +186,40 @@ const getSingleBook = async (
     return next(createHttpError(500, "Error while getting book"));
   }
 };
+const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+  const bookId = req.params.bookId;
+  const book = await bookModel.findById({ _id: bookId });
 
-export { createBook, updateBook, listBooks, getSingleBook };
+  try {
+    if (!book) {
+      return next(createHttpError(404, "Book not found"));
+    }
+
+    const _req = req as AuthRequest;
+    if (book.author.toString() != _req.userId) {
+      return next(createHttpError(403, "You can not delete other books"));
+    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    return next(createHttpError(500, "Error while deleting book"));
+  }
+
+  //getting public_id from file url
+
+  const coverfileSplits = book.coverImage.split("/").at(-1)?.split(".").at(-2);
+  const coverfileSplitefinal= book.coverImage.split("/").at(-2);
+
+  const bookfileSplit= book.file.split("/").at(-1)
+  const bookfileSplitfinal = book.file.split("/").at(-2);
+
+  await cloudinary.uploader.destroy(`${coverfileSplitefinal}/${coverfileSplits}`)
+  await cloudinary.uploader.destroy(`${bookfileSplitfinal}/${bookfileSplit}`,{
+    resource_type:"raw"
+  })
+
+  await bookModel.deleteOne({_id: bookId})
+
+  res.status(204).json({id:bookId})
+};
+
+export { createBook, updateBook, listBooks, getSingleBook, deleteBook };
