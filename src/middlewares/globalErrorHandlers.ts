@@ -10,6 +10,7 @@ const globalErrorHandlers = (err:HttpError, req: Request, res: Response, next:Ne
         message : err.message,
         errorStack: config.env == "Development" ? err.stack : ''
     });
+    next();
 }
 
 export default globalErrorHandlers;
