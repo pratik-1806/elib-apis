@@ -12,7 +12,7 @@ app.use(express.json())
 //routes
 
 app.use('/api/users',userRoutes)
-app.use("/api/book", bookRouter)
+app.use("/api/books", bookRouter)
 
 //Global error handling 
 
