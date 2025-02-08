@@ -1,1 +1,13 @@
-console.log("welcome to ebbok")
+
+import app from "./src/app"
+
+const startServer=()=>{
+
+    const PORT = process.env.PORT || 3000;
+    
+    app.listen(PORT, ()=>{
+        console.log(`app is listening on port ${PORT}`)
+    })
+}
+
+startServer();
