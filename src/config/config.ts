@@ -6,7 +6,9 @@ const _config ={
 
     databaseUrl : process.env.MONGO_CONNECTION_STRING,
 
-    env : process.env.ENV
+    env : process.env.ENV,
+
+    secretKey : process.env.SECRET_KEY
 
 }
 
