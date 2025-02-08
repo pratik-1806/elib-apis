@@ -85,86 +85,106 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     return next(createHttpError(403, "You can not update other books"));
   }
 
-  try{
+  try {
     const files = req.files as { [__filename: string]: Express.Multer.File[] };
-  let completeCoverImage = "";
-  if (files.coverImage) {
-    const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
+    let completeCoverImage = "";
+    if (files.coverImage) {
+      const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
 
-    const filename = files.coverImage[0].filename;
+      const filename = files.coverImage[0].filename;
 
-    const fileURLToPath = path.resolve(
-      __dirname,
-      "../../public/data/uploads",
-      filename
-    );
+      const fileURLToPath = path.resolve(
+        __dirname,
+        "../../public/data/uploads",
+        filename
+      );
 
-    const uploadResult = await cloudinary.uploader.upload(fileURLToPath, {
-      filename_override: filename,
-      folder: "book-cover",
-      format: coverImageMimeType,
-    });
+      const uploadResult = await cloudinary.uploader.upload(fileURLToPath, {
+        filename_override: filename,
+        folder: "book-cover",
+        format: coverImageMimeType,
+      });
 
-    completeCoverImage = uploadResult.secure_url;
+      completeCoverImage = uploadResult.secure_url;
 
-    await fs.promises.unlink(fileURLToPath);
-  }
-  let completeFileName = "";
-  if (files.file) {
-    const bookFileName = files.file[0].filename;
-    const bookFilePath = path.resolve(
-      __dirname,
-      "../../public/data/uploads",
-      bookFileName
-    );
+      await fs.promises.unlink(fileURLToPath);
+    }
+    let completeFileName = "";
+    if (files.file) {
+      const bookFileName = files.file[0].filename;
+      const bookFilePath = path.resolve(
+        __dirname,
+        "../../public/data/uploads",
+        bookFileName
+      );
 
-    const bookFileuploadResult = await cloudinary.uploader.upload(
-      bookFilePath,
+      const bookFileuploadResult = await cloudinary.uploader.upload(
+        bookFilePath,
+        {
+          resource_type: "raw",
+          filename_override: bookFileName,
+          folder: "book-pdfs",
+          format: "pdf",
+        }
+      );
+      completeFileName = bookFileuploadResult.secure_url;
+      await fs.promises.unlink(bookFilePath);
+    }
+
+    const updateBook = await bookModel.findOneAndUpdate(
       {
-        resource_type: "raw",
-        filename_override: bookFileName,
-        folder: "book-pdfs",
-        format: "pdf",
+        _id: bookId,
+      },
+      {
+        title: title,
+        genre: genre,
+        coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
+        file: completeFileName ? completeFileName : book.file,
+      },
+      {
+        new: true,
       }
     );
-    completeFileName = bookFileuploadResult.secure_url;
-    await fs.promises.unlink(bookFilePath);
-  }
 
-  const updateBook = await bookModel.findOneAndUpdate(
-    {
-      _id: bookId,
-    },
-    {
-      title: title,
-      genre: genre,
-      coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
-      file: completeFileName ? completeFileName : book.file,
-    },
-    {
-      new: true,
-    }
-  );
-
-  res.status(202).json(updateBook);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  }catch(err){
-    return next(createHttpError(400,  "Error while updating book"))
+    res.status(202).json(updateBook);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    return next(createHttpError(400, "Error while updating book"));
   }
-  
 };
 
-const listBooks =  async (req: Request, res: Response, next: NextFunction) => {
-    try{
-        const book = await bookModel.find();
+const listBooks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const book = await bookModel.find();
 
-        res.json(book)
+    res.json(book);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    }catch(err){
-        return next(createHttpError(500, "Error while getting a book"))
-    }
-}
+  } catch (err) {
+    return next(createHttpError(500, "Error while getting a book"));
+  }
+};
 
-export { createBook, updateBook, listBooks };
- 
+const getSingleBook = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const bookId = req.params.bookId;
+
+    const book = await bookModel.findById({ _id: bookId });
+
+    if (!book) {
+      return next(createHttpError(404, "Book not found"));
+    }
+
+    res.json(book);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    return next(createHttpError(500, "Error while getting book"));
+  }
+};
+
+export { createBook, updateBook, listBooks, getSingleBook };
