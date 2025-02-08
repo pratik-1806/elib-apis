@@ -42,10 +42,44 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       expiresIn: "7d",
     });
 
-    res.json({ accessToken: token });
+    res.status(201).json({ accessToken: token });
   } catch (err) {
     return next(createHttpError(400, `Error while creating user ${err}`));
   }
 };
 
-export { createUser };
+const loginUser = async (req: Request, res: Response, next: NextFunction) =>{
+    const {email, password } = req.body;
+
+    if(!email || !password){
+        return next(createHttpError(400, "All fields are required"))
+    }
+
+    const user = await userModel.findOne({email});
+
+    if(!user){
+        return next(createHttpError(404, "User not found"))
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if(!isMatch){
+        return next( createHttpError(401, "Username or Password incorrect"))
+    }
+
+    try{
+        const token = sign({ sub: user._id }, config.secretKey as string, {
+            expiresIn: "7d",
+          });
+      
+          res.status(200).json({ accessToken: token });
+
+    }catch(err){
+        return next(createHttpError(400, `Error while creating token: ${err}`));
+
+    }
+
+
+}
+
+export { createUser ,loginUser};
