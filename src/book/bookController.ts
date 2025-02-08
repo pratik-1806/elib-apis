@@ -4,6 +4,7 @@ import path from "node:path";
 import createHttpError from "http-errors";
 import fs from "node:fs"
 import bookModel from "./bookModel";
+import { AuthRequest } from "../middlewares/authenticate";
 
 
 
@@ -38,10 +39,12 @@ const bookFileuploadResult = await cloudinary.uploader.upload(bookFilePath, {
     format: "pdf"
 })
 
+const _req = req as AuthRequest;
+
 const newBook = await bookModel.create({
     title,
     genre,
-    author : "67a7524f7ca73e672ad5a0fa",
+    author : _req.userId,
     coverImage :uploadResult.secure_url,
     file : bookFileuploadResult.secure_url
 });
