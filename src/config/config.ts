@@ -1,8 +1,6 @@
 import { config as conf } from "dotenv";
 
-if(process.env.ENV != "Production"){
-    conf();
-}
+
 const _config ={
 
     port: process.env.PORT,
