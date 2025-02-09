@@ -72,7 +72,9 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) =>{
             expiresIn: "7d",
           });
       
-          res.status(200).json({ accessToken: token });
+          res.status(200).json({ 
+            user: user,
+            accessToken: token });
 
     }catch(err){
         return next(createHttpError(400, `Error while creating token: ${err}`));
