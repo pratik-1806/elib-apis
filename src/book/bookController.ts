@@ -155,7 +155,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 
 const listBooks = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const book = await bookModel.find();
+    const book = await bookModel.find().populate("auther","name");
 
     res.json(book);
 
