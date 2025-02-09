@@ -9,9 +9,7 @@ const app = express();
 
 //cors setup
 app.use(
-    cors({
-        origin: "https://elib-apis-production.up.railway.app"
-    })
+    cors()
 )
 
 //json parse
