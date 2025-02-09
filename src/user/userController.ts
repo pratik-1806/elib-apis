@@ -71,9 +71,11 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) =>{
         const token = sign({ sub: user._id }, config.secretKey as string, {
             expiresIn: "7d",
           });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const {password, ...userWithoutPassword} = user.toObject();
       
           res.status(200).json({ 
-            user: user,
+            user:userWithoutPassword,
             accessToken: token });
 
     }catch(err){
