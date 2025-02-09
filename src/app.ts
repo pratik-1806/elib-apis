@@ -10,7 +10,7 @@ const app = express();
 //cors setup
 app.use(
     cors({
-        origin: config.frontend_domain
+        origin: "https://elib-apis-production.up.railway.app"
     })
 )
 
